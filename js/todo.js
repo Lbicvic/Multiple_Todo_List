@@ -37,7 +37,7 @@ if (JSON.parse(localStorage.getItem("Todos.list")) || JSON.parse(localStorage.ge
                 tasks.data.forEach((task)=>{
                     if(uniqueID == task.mainDivID){
                         let taskContainer = document.getElementById(item.sideDivID)
-                        let storedTask = createNewTask(task.mainDivValue,task.mainDivID)
+                        let storedTask = createNewTask(task.mainDivValue,task.mainDivID,task.isFinished)
                         taskContainer.appendChild(storedTask)
                     }
                 })
@@ -87,7 +87,7 @@ function createNewTodo(parentID, name, taskContainerID) {
     buttonAddTask.addEventListener('click', () => {
         refreshFlag = 1
         let uniqueTaskId = Date.now().toString(36) + Math.random().toString(36)
-        let task = createNewTask(inputElement.value,uniqueTaskId)
+        let task = createNewTask(inputElement.value,uniqueTaskId,false)
         sideDiv.appendChild(task)
         let todoIds = sideDiv.parentElement.getAttribute("id")
     
@@ -112,7 +112,7 @@ function createNewTodo(parentID, name, taskContainerID) {
     mainDiv.appendChild(buttonDeleteTodo)
 }
 
-function createNewTask(inputTaskValue, uniqueTaskId) {
+function createNewTask(inputTaskValue, uniqueTaskId, isFinished) {
     let newTask = document.createElement('div')
     newTask.id = uniqueTaskId;
     newTask.className = "task"
@@ -124,10 +124,10 @@ function createNewTask(inputTaskValue, uniqueTaskId) {
     }
     let newTaskID = JSON.parse(localStorage.getItem("Tasks.list")) || ""
     if (newTaskID.data) {
-        newTaskID.data.push({ mainDivID: newTask.id, mainDivValue: labelTask.innerText, isTodo : false })
+        newTaskID.data.push({ mainDivID: newTask.id, mainDivValue: labelTask.innerText, isTodo : false , isFinished : false})
     }
     else {
-        newTaskID = { data: [{ mainDivID: newTask.id, mainDivValue: labelTask.innerText, isTodo : false }] }
+        newTaskID = { data: [{ mainDivID: newTask.id, mainDivValue: labelTask.innerText, isTodo : false ,isFinished : false}] }
     }
     if(refreshFlag){
         storeDataTaskToLocalStorage(newTaskID)
@@ -135,7 +135,10 @@ function createNewTask(inputTaskValue, uniqueTaskId) {
     let checkBoxIsFinished = document.createElement('input')
     checkBoxIsFinished.type = "checkbox"
     checkBoxIsFinished.className = "checkbox-input"
-
+    if(isFinished){
+        labelTask.classList.add("task-label-finished")
+        checkBoxIsFinished.checked = true
+    }
     checkBoxIsFinished.addEventListener('click', () => {
         labelTask.classList.toggle("task-label-finished")
     })
@@ -153,7 +156,17 @@ function createNewTask(inputTaskValue, uniqueTaskId) {
     return newTask
 }
 
-document.addEventListener('click', (e) => {
+todoContent.addEventListener('click', (e) => {
+    if(e.target.className == "checkbox-input"){  
+        let tasks = JSON.parse(localStorage.getItem("Tasks.list")) 
+        let elementID = e.target.parentElement.getAttribute("id")
+        tasks.data.forEach((task)=>{
+            if(task.mainDivID == elementID){
+                task.isFinished = !task.isFinished
+            }
+        })
+        storeDataTaskToLocalStorage(tasks)
+     }
     if(e.target.className == "delete-button"){
         let tasks = JSON.parse(localStorage.getItem("Tasks.list"))
         let tasklist = {data : []}
