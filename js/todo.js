@@ -1,17 +1,21 @@
 let htmlBody = document.querySelector('body')
 let refreshFlag = 0
+let titleTodoDiv = document.createElement('div')
+titleTodoDiv.innerText= "Multiple Todos"
+titleTodoDiv.className = "app-name"
 let todoContent = document.createElement('div')
-todoContent.innerText = "Multiple Todos"
+todoContent.className = "multiple-todos"
 htmlBody.appendChild(todoContent)
+todoContent.appendChild(titleTodoDiv)
 
-let breakElement1 = document.createElement('br')
-todoContent.appendChild(breakElement1)
+let enterTodoDiv = document.createElement('div')
+enterTodoDiv.className = "input-btn-todo"
 
 let inputTodo = document.createElement('input')
 inputTodo.type = "text"
-inputTodo.placeholder = "enter todo name here"
+inputTodo.placeholder = "Enter todo name here"
 inputTodo.value = ""
-todoContent.appendChild(inputTodo)
+enterTodoDiv.appendChild(inputTodo)
 
 let buttonAddTodos = document.createElement('button')
 buttonAddTodos.innerText = "Add Todo"
@@ -23,14 +27,14 @@ buttonAddTodos.addEventListener('click', (e) => {
     let textConID =  Date.now().toString()
     createNewTodo(parID, nameTodo,textConID)
 })
-todoContent.appendChild(buttonAddTodos)
+enterTodoDiv.appendChild(buttonAddTodos)
+todoContent.appendChild(enterTodoDiv)
 
 if (JSON.parse(localStorage.getItem("Todos.list")) || JSON.parse(localStorage.getItem("Tasks.list"))) {
     let todos = JSON.parse(localStorage.getItem("Todos.list"))
     let tasks = JSON.parse(localStorage.getItem("Tasks.list"))
     todos.data.forEach((item) => {
         let dataTaskID = JSON.parse(localStorage.getItem(item.mainDivID))
-        console.log(dataTaskID)
         createNewTodo(item.mainDivID,item.mainDivValue,item.sideDivID)
         if ("id" in dataTaskID) {
             dataTaskID.id.forEach((uniqueID)=>{
@@ -51,7 +55,7 @@ function createNewTodo(parentID, name, taskContainerID) {
     mainDiv.id = parentID
     mainDiv.innerText = name
     mainDiv.className = "todo"
-    if (mainDiv.innerText === null || mainDiv.innerText === "") {
+    if (!mainDiv.innerText) {
         return
     }
     let todoID = JSON.parse(localStorage.getItem("Todos.list")) || ""
@@ -76,7 +80,7 @@ function createNewTodo(parentID, name, taskContainerID) {
 
     let inputElement = document.createElement('input')
     inputElement.type = "text"
-    inputElement.placeholder = "enter task here"
+    inputElement.placeholder = "Enter task here"
     inputElement.value = ""
     inputElement.className = "input-task"
     mainDiv.appendChild(inputElement)
@@ -108,7 +112,7 @@ function createNewTodo(parentID, name, taskContainerID) {
 
     let buttonDeleteTodo = document.createElement('button')
     buttonDeleteTodo.innerText = "Delete Todo"
-    buttonDeleteTodo.className = "delete-button"
+    buttonDeleteTodo.className = "delete-todo"
     mainDiv.appendChild(buttonDeleteTodo)
 }
 
@@ -170,44 +174,47 @@ todoContent.addEventListener('click', (e) => {
     if(e.target.className == "delete-button"){
         let tasks = JSON.parse(localStorage.getItem("Tasks.list"))
         let tasklist = {data : []}
+       
         if (e.target.parentElement.classList.contains('task')) {
             let elementID = e.target.parentElement.getAttribute("id")
-               
+
                 tasks.data.forEach((task)=>{
                     if(task.mainDivID != elementID){
                         tasklist.data.push(task)
                     }
-                })
+                })     
                 storeDataTaskToLocalStorage(tasklist)
                 return e.target.parentElement.remove()
             }
-            if (e.target.parentElement.classList.contains('todo')) {
-                let elementID = e.target.parentElement.getAttribute("id")
-                
-                    let todolist = {data : []}
-                  
-                    let todo = JSON.parse(localStorage.getItem("Todos.list"))
-                
-                    todo.data.forEach((todo)=>{
-                        if(todo.mainDivID != elementID){
-                            todolist.data.push(todo)
-                        }
-                        else{
-                            const dataID = localStorage.getItem(elementID)
-                                tasks.data.forEach((task)=>{
-                                    if(!dataID.includes(task.mainDivID)){
-                                        tasklist.data.push(task)
-                                    }
-                                    
-                                })
-                            
-                            localStorage.removeItem(elementID)
-                        }
-                    })
-                    storeDataTaskToLocalStorage(tasklist)
-                    addTodoToLocalStorage(todolist)
-                    return e.target.parentElement.remove()
-                }
+    }
+    if(e.target.className == "delete-todo"){
+        let tasks = JSON.parse(localStorage.getItem("Tasks.list"))
+        let tasklist = {data : []}
+        if (e.target.parentElement.classList.contains('todo')) {
+            let elementID = e.target.parentElement.getAttribute("id")
+            let todo = JSON.parse(localStorage.getItem("Todos.list"))
+                let todolist = {data : []} 
+            
+                todo.data.forEach((todo)=>{
+                    if(todo.mainDivID != elementID){
+                        todolist.data.push(todo)
+                    }
+                    else{
+                        const dataID = localStorage.getItem(elementID)
+                            tasks.data.forEach((task)=>{
+                                if(!dataID.includes(task.mainDivID)){
+                                    tasklist.data.push(task)
+                                }
+                                
+                            })
+                        
+                        localStorage.removeItem(elementID)
+                    }
+                })
+                storeDataTaskToLocalStorage(tasklist)
+                addTodoToLocalStorage(todolist)
+                return e.target.parentElement.remove()
+            }
     }
     
 })
