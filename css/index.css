@@ -1,4 +1,5 @@
-.task-label-finished{
+.task.task-label-finished{
+    background-color: #888;
     text-decoration: line-through;
 }
 .app-name{
@@ -6,8 +7,8 @@
 }
 .multiple-todos{
     border: 1px solid black;
-    margin-left: 15%;
     margin-top: 50px;
+    margin-left: 15%;
     margin-right: 15%;
     padding-bottom: 5px;
     background-color: #c6cbd1;
@@ -18,11 +19,10 @@
     margin-top: 20px;
 }
 .todo {
-    border: 1px solid black;
     margin : 20px;
     background-color: #abb6c8;
+    border: 1px solid black;
     border-radius: 5px;
-    align-items: center;
 }
 .task-container{
     width: 50%;
@@ -31,15 +31,26 @@
 }
 .task{
     margin-top: 20px;
+    margin-bottom: 20px;
     text-align:left;
-    background-color: #dadada;
+    background-color: #dcdcdc;
     border-radius: 5px;
     border: 1px solid black;
 }
 .task:hover{
-    background-color: #999;
+    background-color: #c0c0c0;
 }
 .task-label{
     overflow-wrap: break-word;
 }
-
+.delete-button{
+    float: right;
+    border-radius: 5px;
+}
+.delete-button:hover, .delete-todo:hover{
+    background-color: #CD5C5C;
+}
+.input-task, .add-task, .input-todo, .add-todo, .delete-todo{
+    border-radius: 5px;
+    padding: 5px;
+}

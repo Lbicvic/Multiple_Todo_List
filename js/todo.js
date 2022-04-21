@@ -15,10 +15,12 @@ let inputTodo = document.createElement('input')
 inputTodo.type = "text"
 inputTodo.placeholder = "Enter todo name here"
 inputTodo.value = ""
+inputTodo.className = "input-todo"
 enterTodoDiv.appendChild(inputTodo)
 
 let buttonAddTodos = document.createElement('button')
 buttonAddTodos.innerText = "Add Todo"
+buttonAddTodos.className = "add-todo"
 buttonAddTodos.addEventListener('click', (e) => {
     e.preventDefault()
     refreshFlag=1
@@ -140,11 +142,11 @@ function createNewTask(inputTaskValue, uniqueTaskId, isFinished) {
     checkBoxIsFinished.type = "checkbox"
     checkBoxIsFinished.className = "checkbox-input"
     if(isFinished){
-        labelTask.classList.add("task-label-finished")
+        newTask.classList.add("task-label-finished")
         checkBoxIsFinished.checked = true
     }
     checkBoxIsFinished.addEventListener('click', () => {
-        labelTask.classList.toggle("task-label-finished")
+        newTask.classList.toggle("task-label-finished")
     })
 
     let buttonDelete = document.createElement('button')
@@ -174,17 +176,28 @@ todoContent.addEventListener('click', (e) => {
     if(e.target.className == "delete-button"){
         let tasks = JSON.parse(localStorage.getItem("Tasks.list"))
         let tasklist = {data : []}
-       
+        let taskIds = {id : []}
         if (e.target.parentElement.classList.contains('task')) {
             let elementID = e.target.parentElement.getAttribute("id")
+            let father = e.target.parentElement.parentElement.parentElement.getAttribute("id")
+            const dataID = JSON.parse(localStorage.getItem(father))
 
-                tasks.data.forEach((task)=>{
-                    if(task.mainDivID != elementID){
-                        tasklist.data.push(task)
-                    }
-                })     
-                storeDataTaskToLocalStorage(tasklist)
-                return e.target.parentElement.remove()
+            for(let i = 0; i< dataID.id.length; i++){
+
+                if(dataID.id[i] != elementID){
+                    taskIds.id.push(dataID.id[i])
+                    
+                }
+            }
+            addTaskIDToLocalStorage(taskIds,father)
+           
+            tasks.data.forEach((task)=>{
+                if(task.mainDivID != elementID){
+                    tasklist.data.push(task)
+                }
+            })     
+            storeDataTaskToLocalStorage(tasklist)
+            return e.target.parentElement.remove()
             }
     }
     if(e.target.className == "delete-todo"){
