@@ -21,8 +21,7 @@ enterTodoDiv.appendChild(inputTodo)
 let buttonAddTodos = document.createElement('button')
 buttonAddTodos.innerText = "Add Todo"
 buttonAddTodos.className = "add-todo"
-buttonAddTodos.addEventListener('click', (e) => {
-    e.preventDefault()
+buttonAddTodos.addEventListener('click', () => {
     refreshFlag=1
     let parID = Date.now().toString(36) + Math.random().toString(36)
     let nameTodo = inputTodo.value.toUpperCase()
@@ -32,11 +31,11 @@ buttonAddTodos.addEventListener('click', (e) => {
 enterTodoDiv.appendChild(buttonAddTodos)
 todoContent.appendChild(enterTodoDiv)
 
-if (JSON.parse(localStorage.getItem("Todos.list")) || JSON.parse(localStorage.getItem("Tasks.list"))) {
-    let todos = JSON.parse(localStorage.getItem("Todos.list"))
-    let tasks = JSON.parse(localStorage.getItem("Tasks.list"))
+if (getParsedDataFromLocalStorage("Todos.list") || getParsedDataFromLocalStorage("Tasks.list")) {
+    let todos = getParsedDataFromLocalStorage("Todos.list")
+    let tasks = getParsedDataFromLocalStorage("Tasks.list")
     todos.data.forEach((item) => {
-        let dataTaskID = JSON.parse(localStorage.getItem(item.mainDivID))
+        let dataTaskID = getParsedDataFromLocalStorage(item.mainDivID)
         createNewTodo(item.mainDivID,item.mainDivValue,item.sideDivID)
         if ("id" in dataTaskID) {
             dataTaskID.id.forEach((uniqueID)=>{
@@ -60,7 +59,7 @@ function createNewTodo(parentID, name, taskContainerID) {
     if (!mainDiv.innerText) {
         return
     }
-    let todoID = JSON.parse(localStorage.getItem("Todos.list")) || ""
+    let todoID = getParsedDataFromLocalStorage("Todos.list") || ""
     if (todoID.data) {
         todoID.data.push({ mainDivID: mainDiv.id, mainDivValue: mainDiv.innerText, sideDivID : taskContainerID, isTodo: true })
     }
@@ -95,9 +94,8 @@ function createNewTodo(parentID, name, taskContainerID) {
         let uniqueTaskId = Date.now().toString(36) + Math.random().toString(36)
         let task = createNewTask(inputElement.value,uniqueTaskId,false)
         sideDiv.appendChild(task)
-        let todoIds = sideDiv.parentElement.getAttribute("id")
-    
-        let taskID = JSON.parse(localStorage.getItem(todoIds)) || ""
+        let todoIds = getParentID(sideDiv)
+        let taskID = getParsedDataFromLocalStorage(todoIds) || ""
         if ("id" in taskID) {
             taskID.id.push(task.id) 
         }
@@ -128,7 +126,7 @@ function createNewTask(inputTaskValue, uniqueTaskId, isFinished) {
     if (!labelTask.innerText) {
         return
     }
-    let newTaskID = JSON.parse(localStorage.getItem("Tasks.list")) || ""
+    let newTaskID = getParsedDataFromLocalStorage("Tasks.list") || ""
     if (newTaskID.data) {
         newTaskID.data.push({ mainDivID: newTask.id, mainDivValue: labelTask.innerText, isTodo : false , isFinished : false})
     }
@@ -164,8 +162,8 @@ function createNewTask(inputTaskValue, uniqueTaskId, isFinished) {
 
 todoContent.addEventListener('click', (e) => {
     if(e.target.className == "checkbox-input"){  
-        let tasks = JSON.parse(localStorage.getItem("Tasks.list")) 
-        let elementID = e.target.parentElement.getAttribute("id")
+        let tasks = getParsedDataFromLocalStorage("Tasks.list") 
+        let elementID = getParentID(e.target)
         tasks.data.forEach((task)=>{
             if(task.mainDivID == elementID){
                 task.isFinished = !task.isFinished
@@ -174,13 +172,13 @@ todoContent.addEventListener('click', (e) => {
         storeDataTaskToLocalStorage(tasks)
      }
     if(e.target.className == "delete-button"){
-        let tasks = JSON.parse(localStorage.getItem("Tasks.list"))
+        let tasks = getParsedDataFromLocalStorage("Tasks.list") 
         let tasklist = {data : []}
         let taskIds = {id : []}
         if (e.target.parentElement.classList.contains('task')) {
-            let elementID = e.target.parentElement.getAttribute("id")
-            let father = e.target.parentElement.parentElement.parentElement.getAttribute("id")
-            const dataID = JSON.parse(localStorage.getItem(father))
+            let elementID = getParentID(e.target)
+            let parentTodoID = e.target.parentElement.parentElement.parentElement.getAttribute("id")
+            const dataID = getParsedDataFromLocalStorage(parentTodoID) 
 
             for(let i = 0; i< dataID.id.length; i++){
 
@@ -189,7 +187,7 @@ todoContent.addEventListener('click', (e) => {
                     
                 }
             }
-            addTaskIDToLocalStorage(taskIds,father)
+            addTaskIDToLocalStorage(taskIds,parentTodoID)
            
             tasks.data.forEach((task)=>{
                 if(task.mainDivID != elementID){
@@ -201,35 +199,45 @@ todoContent.addEventListener('click', (e) => {
             }
     }
     if(e.target.className == "delete-todo"){
-        let tasks = JSON.parse(localStorage.getItem("Tasks.list"))
-        let tasklist = {data : []}
         if (e.target.parentElement.classList.contains('todo')) {
-            let elementID = e.target.parentElement.getAttribute("id")
-            let todo = JSON.parse(localStorage.getItem("Todos.list"))
-                let todolist = {data : []} 
-            
-                todo.data.forEach((todo)=>{
-                    if(todo.mainDivID != elementID){
-                        todolist.data.push(todo)
-                    }
-                    else{
-                        const dataID = localStorage.getItem(elementID)
-                            tasks.data.forEach((task)=>{
-                                if(!dataID.includes(task.mainDivID)){
-                                    tasklist.data.push(task)
-                                }
-                                
-                            })
-                        
-                        localStorage.removeItem(elementID)
-                    }
-                })
-                storeDataTaskToLocalStorage(tasklist)
-                addTodoToLocalStorage(todolist)
-                return e.target.parentElement.remove()
+            let elementID = getParentID(e.target)
+            let todo = getParsedDataFromLocalStorage("Todos.list")
+            let todolist = {data : []} 
+            if(getParsedDataFromLocalStorage("Tasks.list")){
+                let tasks = getParsedDataFromLocalStorage("Tasks.list") 
+                let tasklist = {data : []}
+                    todo.data.forEach((todo)=>{
+                        if(todo.mainDivID != elementID){
+                            todolist.data.push(todo)
+                        }
+                        else{
+                            const dataID = localStorage.getItem(elementID)
+                                tasks.data.forEach((task)=>{
+                                    if(!dataID.includes(task.mainDivID)){
+                                        tasklist.data.push(task)
+                                    }
+                                    
+                                })
+                            
+                            localStorage.removeItem(elementID)
+                        }
+                    })
+                    storeDataTaskToLocalStorage(tasklist)
+                    addTodoToLocalStorage(todolist)
+                    return e.target.parentElement.remove()
+            }
+            else{
+                    todo.data.forEach((todo)=>{
+                        if(todo.mainDivID != elementID){
+                            todolist.data.push(todo)
+                        }
+                    })
+                    addTodoToLocalStorage(todolist)
+                    localStorage.removeItem(elementID)
+                    return e.target.parentElement.remove()
+            }
             }
     }
-    
 })
 function addTodoToLocalStorage(todosContent) {
     localStorage.setItem("Todos.list", JSON.stringify(todosContent))
@@ -239,4 +247,10 @@ function addTaskIDToLocalStorage(inputTask, inputTaskID) {
 }
 function storeDataTaskToLocalStorage(newTaskID){
     localStorage.setItem("Tasks.list", JSON.stringify(newTaskID))
+}
+function getParsedDataFromLocalStorage(keyID){
+    return JSON.parse(localStorage.getItem(keyID))
+}
+function getParentID(element){
+    return element.parentElement.getAttribute("id")
 }
